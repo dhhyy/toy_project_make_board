@@ -7,7 +7,7 @@ import requests
 from django.views import View
 from django.http import HttpResponse, JsonResponse, response
 from .models import User
-# from .utils import LoginDecorator
+from .utils import LoginDecorator
 from my_settings import SECRET_KEY, email_validation, password_validation, algorithm
 
 class SignUpView(View):
@@ -67,3 +67,14 @@ class SignInView(View):
             
         except KeyError:
             JsonResponse({'message' : 'KEY_ERROR'}, status=401)
+            
+class Example(View):
+    @LoginDecorator
+    def post(self, request):
+        
+        try:    
+            user = User.objects.get(id=6)
+            return JsonResponse({'user_name' : user.name}, status=200)
+        
+        except:
+            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)

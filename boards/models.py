@@ -18,6 +18,7 @@ class Board(models.Model):
     writer    = ForeignKey('users.User', on_delete=models.CASCADE)
     content   = models.CharField(max_length=500)
     hits      = models.SmallIntegerField(default=0)
+    password  = models.TextField(default=None)
     create_at = models.DateTimeField(auto_now_add=True)
     admin     = ForeignKey('boards.Admin', on_delete=models.CASCADE, null=True)
     
