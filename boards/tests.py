@@ -137,6 +137,7 @@ class RePostingTest(TestCase):
         self.assertEqual(response.status_code, 200)
     
     # delete와 마찬가지로 패스워드 부분이 문제다
+    
     def test_fail_not_matched_password_reposting(self):
         
         signin_user = {
