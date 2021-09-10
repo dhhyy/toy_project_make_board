@@ -13,6 +13,7 @@ from django.forms.models import model_to_dict
 from django.db.models    import F, Count, Case, When
 from django.db           import connection
 
+# 일치하지 않는 태그가 들어왔을 떄
 class PostingView(View):
     @LoginDecorator
     def post(self, request):
