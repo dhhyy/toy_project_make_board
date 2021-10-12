@@ -13,14 +13,14 @@ from django.forms.models import model_to_dict
 from django.db.models    import F, Count, Case, When
 from django.db           import connection
 
-# 일치하지 않는 태그가 들어왔을 떄
+# 일치하지 않는 태그가 들어왔을 때도 구현
+
 class PostingView(View):
     @LoginDecorator
     def post(self, request):
         
         try:
-            data = json.loads(request.body)
-            
+            data    = json.loads(request.body)
             title   = data['title']
             content = data['content']
             writer  = request.user
@@ -44,7 +44,7 @@ class PostingView(View):
             board.groupno = board.id
             board.save()
 
-            return JsonResponse({'message' : data}, status=200)
+            return JsonResponse({'message' : 'SUCCESS'}, status=200)
             
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
@@ -52,41 +52,38 @@ class PostingView(View):
 class RePostingView(View):
     @LoginDecorator
     def post(self, request, board_id):
+        
         try:
-            data = json.loads(request.body)
-            
+            data     = json.loads(request.body)
             title    = data['title']
             content  = data['content']
             password = data['password']
-            
-            board = Board.objects.get(id=board_id)
-            
-            if not bcrypt.checkpw(password.encode('utf-8'), board.password.encode('utf-8')):
-                JsonResponse({'message' : 'NOT_MATCHED_PASSWORD'}, status=400)
+            board    = Board.objects.get(id=board_id)
 
-            board.title = title
-            board.content = content
-            
+            if not bcrypt.checkpw(password.encode('UTF-8'), board.password.encode('UTF-8')):
+                return JsonResponse({'message' : 'NOT_MATCHED_PASSWORD'}, status=401)
+        
+            board.title    = title
+            board.content  = content
+
             board.save()
             
             return JsonResponse({'message' : 'SUCCESS'})
-            
+        
         except KeyError:
-            JsonResponse({'message' : 'KEY_ERROR'}, status=400)
-            
+            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
+
 class PostingDeleteView(View):
     @LoginDecorator
     def post(self, request, board_id):
         
         try:
-            data = json.loads(request.body)
-            
+            data     = json.loads(request.body)
             password = data['password']
+            board    = Board.objects.get(id=board_id)
             
-            board = Board.objects.get(id=board_id)
-            
-            if not bcrypt.checkpw(password.encode('utf-8'), board.password.encode('utf-8')):        
-                JsonResponse({'message' : 'NOT_MATCHED_PASSWORD'}, status=400)
+            if not bcrypt.checkpw(password.encode('UTF-8'), board.password.encode('UTF-8')):
+                return JsonResponse({'message' : 'NOT_MATCHED_PASSWORD'}, status=401)
                 
             board.delete()
         
@@ -94,8 +91,7 @@ class PostingDeleteView(View):
         
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'})
-
-# 정렬 기능 수정 필요
+        
 class PostingListView(View):
     def get(self, request):
         
@@ -121,14 +117,15 @@ class PostingListView(View):
             {
                 'id'        : board.id,
                 'title'     : board.title,
-                'content'   : board.content,
+                'content'   : board.content,             
                 'hits'      : board.hits,
                 'groupno'   : board.groupno,
                 'orderno'   : board.orderno,
                 'depth'     : board.depth,
                 'writer'    : board.writer.name,
                 'tag'       : board.tag.name,
-                'create_at' : board.create_at
+                # 'create_at' : board.create_at
+                'create_at' : board.create_at.strftime('%Y-%m-%d %H:%M:%S')
                 } for board in boards][offset:limit]
                 
         return JsonResponse({'message' : post_list}, status=200)
